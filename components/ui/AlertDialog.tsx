@@ -6,7 +6,8 @@ import {
   StyleSheet, 
   TouchableOpacity, 
   TouchableWithoutFeedback,
-  useColorScheme
+  useColorScheme,
+  Animated
 } from 'react-native';
 
 interface AlertDialogProps {
@@ -32,6 +33,25 @@ const AlertDialog = ({
 }: AlertDialogProps) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const [animation] = React.useState(new Animated.Value(0));
+  
+  React.useEffect(() => {
+    if (visible) {
+      Animated.spring(animation, {
+        toValue: 1,
+        useNativeDriver: true,
+        damping: 20,
+        stiffness: 300,
+      }).start();
+    } else {
+      Animated.spring(animation, {
+        toValue: 0,
+        useNativeDriver: true,
+        damping: 20,
+        stiffness: 300,
+      }).start();
+    }
+  }, [visible]);
   
   return (
     <Modal
@@ -41,18 +61,29 @@ const AlertDialog = ({
       onRequestClose={onCancel}
     >
       <TouchableWithoutFeedback onPress={onCancel}>
-        <View style={styles.overlay}>
+        <View style={[styles.overlay, { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.3)' }]}>
           <TouchableWithoutFeedback>
-            <View 
+            <Animated.View 
               style={[
                 styles.dialog, 
-                { backgroundColor: isDark ? '#2D2C32' : '#FFFFFF' }
+                { 
+                  backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
+                  transform: [
+                    {
+                      scale: animation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.9, 1],
+                      }),
+                    },
+                  ],
+                  opacity: animation,
+                }
               ]}
             >
-              <Text style={[styles.title, { color: isDark ? '#E6E0E9' : '#1C1B1F' }]}>
+              <Text style={[styles.title, { color: isDark ? '#FFFFFF' : '#000000' }]}>
                 {title}
               </Text>
-              <Text style={[styles.message, { color: isDark ? '#CAC4D0' : '#49454F' }]}>
+              <Text style={[styles.message, { color: isDark ? '#98989F' : '#8E8E93' }]}>
                 {message}
               </Text>
               
@@ -61,16 +92,15 @@ const AlertDialog = ({
                   style={[styles.button, styles.cancelButton]}
                   onPress={onCancel}
                 >
-                  <Text style={[styles.buttonText, { color: isDark ? '#D0BCFF' : '#6750A4' }]}>
+                  <Text style={[styles.buttonText, { color: isDark ? '#0A84FF' : '#007AFF' }]}>
                     {cancelLabel}
                   </Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity
                   style={[
-                    styles.button, 
-                    danger ? styles.dangerButton : styles.confirmButton,
-                    { backgroundColor: danger ? '#B3261E' : '#6750A4' }
+                    styles.button,
+                    { backgroundColor: danger ? (isDark ? '#FF453A' : '#FF3B30') : (isDark ? '#0A84FF' : '#007AFF') }
                   ]}
                   onPress={onConfirm}
                 >
@@ -79,7 +109,7 @@ const AlertDialog = ({
                   </Text>
                 </TouchableOpacity>
               </View>
-            </View>
+            </Animated.View>
           </TouchableWithoutFeedback>
         </View>
       </TouchableWithoutFeedback>
@@ -90,48 +120,51 @@ const AlertDialog = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   dialog: {
     width: '100%',
-    maxWidth: 400,
-    borderRadius: 28,
-    padding: 24,
+    maxWidth: 270,
+    borderRadius: 14,
+    padding: 20,
+    alignItems: 'center',
   },
   title: {
-    fontSize: 24,
-    fontWeight: '500',
-    marginBottom: 16,
+    fontSize: 17,
+    fontWeight: '600',
+    fontFamily: 'SF-Pro-Text-Semibold',
+    textAlign: 'center',
+    marginBottom: 8,
   },
   message: {
-    fontSize: 16,
-    marginBottom: 24,
+    fontSize: 13,
+    fontFamily: 'SF-Pro-Text-Regular',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 18,
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+    width: '100%',
+    gap: 8,
   },
   button: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 100,
-    marginLeft: 8,
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cancelButton: {
     backgroundColor: 'transparent',
   },
-  confirmButton: {
-    backgroundColor: '#6750A4',
-  },
-  dangerButton: {
-    backgroundColor: '#B3261E',
-  },
   buttonText: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 17,
+    fontWeight: '600',
+    fontFamily: 'SF-Pro-Text-Semibold',
   },
   confirmText: {
     color: '#FFFFFF',
