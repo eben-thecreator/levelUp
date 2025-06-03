@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, Pressable, useColorScheme, Animated } from 'react-native';
 import { Link } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
 import { Survey } from '@/types';
 import { formatDate } from '@/utils/formatters';
+import { colors } from '@/utils/colors';
 
 interface JobCardProps {
   survey: Survey;
@@ -12,56 +13,68 @@ interface JobCardProps {
 const JobCard = ({ survey }: JobCardProps) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const theme = isDark ? colors.dark : colors.light;
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+  
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.97,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
   
   return (
     <Link href={`/job/${survey.id}`} asChild>
-      <Pressable>
-        <View 
+      <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut}>
+        <Animated.View 
           style={[
             styles.card, 
-            { backgroundColor: isDark ? '#2D2C32' : '#FFFFFF' }
+            { 
+              backgroundColor: theme.groupedBackground,
+              transform: [{ scale: scaleAnim }]
+            }
           ]}
         >
           <View style={styles.content}>
             <View style={styles.titleRow}>
-              <Text style={[styles.title, { color: isDark ? '#E6E0E9' : '#1C1B1F' }]}>
+              <Text style={[styles.title, { color: theme.text }]}>
                 {survey.title}
               </Text>
               <View 
                 style={[
                   styles.loopTypeBadge,
-                  { 
-                    backgroundColor: isDark ? '#49454F' : '#F7F2FA',
-                  }
+                  { backgroundColor: isDark ? '#1C1C1E' : theme.secondaryBackground }
                 ]}
               >
-                <Text 
-                  style={[
-                    styles.loopTypeText,
-                    { color: isDark ? '#D0BCFF' : '#6750A4' }
-                  ]}
-                >
+                <Text style={[styles.loopTypeText, { color: theme.primary }]}>
                   {survey.loopType === 'closed' ? 'Closed Loop' : 'Open Loop'}
                 </Text>
               </View>
             </View>
             
-            <Text style={[styles.surveyor, { color: isDark ? '#CAC4D0' : '#49454F' }]}>
+            <Text style={[styles.surveyor, { color: theme.secondaryText }]}>
               {survey.surveyor}
             </Text>
             
             <View style={styles.detailsRow}>
-              <Text style={[styles.date, { color: isDark ? '#CAC4D0' : '#79747E' }]}>
+              <Text style={[styles.date, { color: theme.secondaryText }]}>
                 {formatDate(survey.date)}
               </Text>
-              <Text style={[styles.setupCount, { color: isDark ? '#CAC4D0' : '#79747E' }]}>
+              <Text style={[styles.setupCount, { color: theme.secondaryText }]}>
                 {survey.setups?.length || 0} setups
               </Text>
             </View>
           </View>
           
-          <ChevronRight size={20} color={isDark ? '#CAC4D0' : '#79747E'} />
-        </View>
+          <ChevronRight size={20} color={theme.secondaryText} />
+        </Animated.View>
       </Pressable>
     </Link>
   );
@@ -74,11 +87,11 @@ const styles = StyleSheet.create({
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 8,
+    elevation: 2,
   },
   content: {
     flex: 1,
@@ -89,22 +102,25 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   title: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
+    fontFamily: 'SF-Pro-Text-Semibold',
     flex: 1,
   },
   loopTypeBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: 8,
     marginLeft: 8,
   },
   loopTypeText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
+    fontFamily: 'SF-Pro-Text-Medium',
   },
   surveyor: {
-    fontSize: 14,
+    fontSize: 15,
+    fontFamily: 'SF-Pro-Text-Regular',
     marginBottom: 8,
   },
   detailsRow: {
@@ -112,10 +128,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   date: {
-    fontSize: 12,
+    fontSize: 13,
+    fontFamily: 'SF-Pro-Text-Regular',
   },
   setupCount: {
-    fontSize: 12,
+    fontSize: 13,
+    fontFamily: 'SF-Pro-Text-Regular',
   },
 });
 

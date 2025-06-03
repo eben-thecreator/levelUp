@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, Pressable, useColorScheme, Animated } from 'react-native';
+import { colors } from '@/utils/colors';
 
 interface LoopTypeSelectorProps {
   value: 'open' | 'closed';
@@ -9,36 +10,48 @@ interface LoopTypeSelectorProps {
 const LoopTypeSelector = ({ value, onChange }: LoopTypeSelectorProps) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const theme = isDark ? colors.dark : colors.light;
+  const [animation] = React.useState(new Animated.Value(value === 'closed' ? 0 : 1));
+  
+  React.useEffect(() => {
+    Animated.spring(animation, {
+      toValue: value === 'closed' ? 0 : 1,
+      useNativeDriver: false,
+      damping: 20,
+      stiffness: 300,
+    }).start();
+  }, [value]);
   
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: isDark ? '#CAC4D0' : '#49454F' }]}>
+      <Text style={[styles.label, { color: theme.secondaryText }]}>
         Loop Type
       </Text>
       
-      <View style={styles.buttonContainer}>
-        <Pressable
+      <View style={[styles.buttonContainer, { backgroundColor: theme.secondaryBackground }]}>
+        <Animated.View 
           style={[
-            styles.button,
-            styles.leftButton,
-            value === 'closed' && styles.activeButton,
-            { 
-              backgroundColor: value === 'closed' 
-                ? (isDark ? '#D0BCFF' : '#EBE4FD') 
-                : (isDark ? '#49454F' : '#F7F2FA')
-            }
-          ]}
+            styles.selector,
+            {
+              backgroundColor: theme.primary,
+              transform: [{
+                translateX: animation.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 150],
+                }),
+              }],
+            },
+          ]} 
+        />
+        
+        <Pressable
+          style={styles.button}
           onPress={() => onChange('closed')}
         >
           <Text 
             style={[
               styles.buttonText,
-              value === 'closed' && styles.activeButtonText,
-              { 
-                color: value === 'closed' 
-                  ? (isDark ? '#381E72' : '#381E72') 
-                  : (isDark ? '#CAC4D0' : '#49454F')
-              }
+              { color: value === 'closed' ? '#FFFFFF' : theme.secondaryText }
             ]}
           >
             Closed Loop
@@ -46,27 +59,13 @@ const LoopTypeSelector = ({ value, onChange }: LoopTypeSelectorProps) => {
         </Pressable>
         
         <Pressable
-          style={[
-            styles.button,
-            styles.rightButton,
-            value === 'open' && styles.activeButton,
-            { 
-              backgroundColor: value === 'open' 
-                ? (isDark ? '#D0BCFF' : '#EBE4FD') 
-                : (isDark ? '#49454F' : '#F7F2FA')
-            }
-          ]}
+          style={styles.button}
           onPress={() => onChange('open')}
         >
           <Text 
             style={[
               styles.buttonText,
-              value === 'open' && styles.activeButtonText,
-              { 
-                color: value === 'open' 
-                  ? (isDark ? '#381E72' : '#381E72') 
-                  : (isDark ? '#CAC4D0' : '#49454F')
-              }
+              { color: value === 'open' ? '#FFFFFF' : theme.secondaryText }
             ]}
           >
             Open Loop
@@ -82,35 +81,33 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    fontSize: 14,
+    fontSize: 15,
+    fontFamily: 'SF-Pro-Text-Regular',
     marginBottom: 8,
   },
   buttonContainer: {
     flexDirection: 'row',
-    height: 40,
+    height: 32,
+    borderRadius: 8,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  selector: {
+    position: 'absolute',
+    width: '50%',
+    height: '100%',
+    borderRadius: 8,
   },
   button: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  leftButton: {
-    borderTopLeftRadius: 20,
-    borderBottomLeftRadius: 20,
-  },
-  rightButton: {
-    borderTopRightRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  activeButton: {
-    borderWidth: 0,
+    zIndex: 1,
   },
   buttonText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  activeButtonText: {
+    fontSize: 13,
     fontWeight: '600',
+    fontFamily: 'SF-Pro-Text-Semibold',
   },
 });
 
