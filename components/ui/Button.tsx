@@ -1,5 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, View, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, View, StyleProp, ViewStyle, TextStyle, Platform } from 'react-native';
+import { colors } from '@/utils/colors';
+import { useColorScheme } from 'react-native';
 
 interface ButtonProps {
   title: string;
@@ -22,26 +24,46 @@ const Button = ({
   style, 
   textStyle 
 }: ButtonProps) => {
+  const colorScheme = useColorScheme();
+  const theme = colorScheme === 'dark' ? colors.dark : colors.light;
+
   return (
     <TouchableOpacity
       style={[
         styles.button,
-        primary && styles.primaryButton,
-        danger && styles.dangerButton,
-        disabled && styles.disabledButton,
+        primary && {
+          backgroundColor: theme.primary,
+          borderColor: theme.primary,
+        },
+        danger && {
+          backgroundColor: 'transparent',
+          borderColor: theme.error,
+        },
+        disabled && {
+          backgroundColor: theme.surface,
+          borderColor: theme.border,
+          opacity: 0.5,
+        },
         style,
       ]}
       onPress={onPress}
       disabled={disabled}
-      activeOpacity={0.7}
+      activeOpacity={0.8}
     >
       {icon && <View style={styles.iconContainer}>{icon}</View>}
       <Text 
         style={[
           styles.text,
-          primary && styles.primaryText,
-          danger && styles.dangerText,
-          disabled && styles.disabledText,
+          {
+            color: primary 
+              ? theme.background 
+              : danger 
+                ? theme.error 
+                : theme.primary,
+          },
+          disabled && {
+            color: theme.textSecondary,
+          },
           textStyle,
         ]}
       >
@@ -57,42 +79,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 100,
+    paddingHorizontal: 20,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#79747E',
-    backgroundColor: 'transparent',
-  },
-  primaryButton: {
-    backgroundColor: '#6750A4',
-    borderColor: '#6750A4',
-  },
-  dangerButton: {
-    backgroundColor: 'transparent',
-    borderColor: '#B3261E',
-  },
-  disabledButton: {
-    backgroundColor: '#E6E0E9',
-    borderColor: '#E6E0E9',
-    opacity: 0.5,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 2,
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+    }),
   },
   text: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#6750A4',
-  },
-  primaryText: {
-    color: '#FFFFFF',
-  },
-  dangerText: {
-    color: '#B3261E',
-  },
-  disabledText: {
-    color: '#79747E',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'SF-Pro-Text-Semibold',
   },
   iconContainer: {
     marginRight: 8,
   },
 });
-
-export default Button;

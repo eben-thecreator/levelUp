@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, StyleProp, ViewStyle, useColorScheme } from 'react-native';
+import { View, StyleSheet, StyleProp, ViewStyle, useColorScheme, Platform } from 'react-native';
+import { colors } from '@/utils/colors';
 
 interface CardProps {
   children: React.ReactNode;
@@ -8,15 +9,15 @@ interface CardProps {
 
 const Card = ({ children, style }: CardProps) => {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const theme = colorScheme === 'dark' ? colors.dark : colors.light;
   
   return (
     <View 
       style={[
         styles.card, 
         { 
-          backgroundColor: isDark ? '#2D2C32' : '#FFFFFF',
-          shadowColor: isDark ? '#000' : '#000',
+          backgroundColor: theme.surface,
+          borderColor: theme.border,
         },
         style
       ]}
@@ -29,11 +30,25 @@ const Card = ({ children, style }: CardProps) => {
 const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
-    padding: 16,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 2,
+    padding: 20,
+    borderWidth: 1,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+    }),
   },
 });
 

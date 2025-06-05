@@ -1,25 +1,36 @@
 import { Tabs } from 'expo-router';
 import { useColorScheme } from 'react-native';
 import { Home, FileText, Settings } from 'lucide-react-native';
+import { colors } from '@/utils/colors';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const theme = colorScheme === 'dark' ? colors.dark : colors.light;
   
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#6750A4',
-        tabBarInactiveTintColor: colorScheme === 'dark' ? '#908D99' : '#79747E',
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.textSecondary,
         tabBarStyle: {
-          backgroundColor: colorScheme === 'dark' ? '#1C1B1F' : '#FFFFFF',
+          backgroundColor: theme.surface,
+          borderTopColor: theme.border,
+          ...theme.elevation.small,
         },
         headerStyle: {
-          backgroundColor: colorScheme === 'dark' ? '#1C1B1F' : '#FFFFFF',
+          backgroundColor: theme.surface,
+          borderBottomColor: theme.border,
+          borderBottomWidth: 1,
         },
         headerTitleStyle: {
-          color: colorScheme === 'dark' ? '#E6E0E9' : '#1C1B1F',
-          fontWeight: '600',
-        }
+          color: theme.text,
+          fontFamily: 'SF-Pro-Display-Semibold',
+          fontSize: 20,
+        },
+        tabBarLabelStyle: {
+          fontFamily: 'SF-Pro-Text-Medium',
+          fontSize: 12,
+        },
       }}>
       <Tabs.Screen
         name="index"
