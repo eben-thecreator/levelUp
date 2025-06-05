@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Platform, useColorScheme, Animated } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Platform, useColorScheme } from 'react-native';
 import { Calendar } from 'lucide-react-native';
 import { formatDate } from '@/utils/formatters';
+import { colors } from '@/utils/colors';
 
 interface DatePickerFieldProps {
   label: string;
@@ -11,49 +12,34 @@ interface DatePickerFieldProps {
 
 const DatePickerField = ({ label, value, onChange }: DatePickerFieldProps) => {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const [pressAnim] = useState(new Animated.Value(1));
-  
-  const handlePressIn = () => {
-    Animated.spring(pressAnim, {
-      toValue: 0.97,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(pressAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-    }).start();
-  };
+  const theme = colorScheme === 'dark' ? colors.dark : colors.light;
   
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: isDark ? '#98989F' : '#8E8E93' }]}>
+      <Text style={[styles.label, { color: theme.textSecondary }]}>
         {label}
       </Text>
-      <Animated.View style={{ transform: [{ scale: pressAnim }] }}>
-        <Pressable
-          style={[
-            styles.input,
-            { 
-              backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
-              borderColor: isDark ? '#38383A' : '#C6C6C8'
-            }
-          ]}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          onPress={() => {
-            // Would open date picker here
-          }}
-        >
-          <Text style={[styles.dateText, { color: isDark ? '#FFFFFF' : '#000000' }]}>
-            {formatDate(value.toISOString())}
-          </Text>
-          <Calendar size={20} color={isDark ? '#98989F' : '#8E8E93'} />
-        </Pressable>
-      </Animated.View>
+      <Pressable
+        style={({ pressed }) => [
+          styles.input,
+          { 
+            backgroundColor: theme.surface,
+            borderColor: pressed ? theme.primary : theme.border,
+          }
+        ]}
+        onPress={() => {
+          // Would open date picker here
+        }}
+      >
+        <Text style={[styles.dateText, { color: theme.text }]}>
+          {formatDate(value.toISOString())}
+        </Text>
+        <Calendar 
+          size={20} 
+          color={theme.textSecondary}
+          strokeWidth={1.5}
+        />
+      </Pressable>
     </View>
   );
 };
@@ -63,21 +49,38 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: 'SF-Pro-Text-Regular',
     marginBottom: 8,
   },
   input: {
-    height: 44,
+    height: 48,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 12,
+    borderRadius: 12,
+    paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 1,
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+      },
+    }),
   },
   dateText: {
-    fontSize: 17,
+    fontSize: 16,
     fontFamily: 'SF-Pro-Text-Regular',
   },
 });
