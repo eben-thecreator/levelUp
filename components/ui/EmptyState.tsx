@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, useColorScheme, Animated } from 'react-native';
+import { View, Text, StyleSheet, useColorScheme } from 'react-native';
 import { ClipboardList } from 'lucide-react-native';
+import { colors } from '@/utils/colors';
 
 interface EmptyStateProps {
   title: string;
@@ -9,48 +10,28 @@ interface EmptyStateProps {
 
 const EmptyState = ({ title, message }: EmptyStateProps) => {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const bounceAnim = React.useRef(new Animated.Value(0)).current;
-  
-  React.useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(bounceAnim, {
-          toValue: 1,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(bounceAnim, {
-          toValue: 0,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, []);
+  const theme = colorScheme === 'dark' ? colors.dark : colors.light;
   
   return (
     <View style={styles.container}>
-      <Animated.View
-        style={{
-          transform: [{
-            translateY: bounceAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0, -10],
-            }),
-          }],
-        }}
+      <View 
+        style={[
+          styles.iconContainer,
+          { backgroundColor: theme.surface, borderColor: theme.border }
+        ]}
       >
         <ClipboardList 
-          size={64} 
-          color={isDark ? '#98989F' : '#8E8E93'} 
+          size={32} 
+          color={theme.primary}
           strokeWidth={1.5}
         />
-      </Animated.View>
-      <Text style={[styles.title, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+      </View>
+      
+      <Text style={[styles.title, { color: theme.text }]}>
         {title}
       </Text>
-      <Text style={[styles.message, { color: isDark ? '#98989F' : '#8E8E93' }]}>
+      
+      <Text style={[styles.message, { color: theme.textSecondary }]}>
         {message}
       </Text>
     </View>
@@ -62,22 +43,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
+    padding: 24,
+  },
+  iconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    marginBottom: 16,
   },
   title: {
     fontSize: 20,
     fontWeight: '600',
-    fontFamily: 'SF-Pro-Text-Semibold',
+    fontFamily: 'SF-Pro-Display-Semibold',
     textAlign: 'center',
-    marginTop: 16,
     marginBottom: 8,
   },
   message: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: 'SF-Pro-Text-Regular',
     textAlign: 'center',
-    maxWidth: 250,
-    lineHeight: 20,
+    maxWidth: 300,
+    lineHeight: 24,
   },
 });
 

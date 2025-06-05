@@ -7,8 +7,9 @@ import {
   TouchableOpacity, 
   TouchableWithoutFeedback,
   useColorScheme,
-  Animated
+  Platform,
 } from 'react-native';
+import { colors } from '@/utils/colors';
 
 interface AlertDialogProps {
   visible: boolean;
@@ -32,26 +33,7 @@ const AlertDialog = ({
   danger = false,
 }: AlertDialogProps) => {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const [animation] = React.useState(new Animated.Value(0));
-  
-  React.useEffect(() => {
-    if (visible) {
-      Animated.spring(animation, {
-        toValue: 1,
-        useNativeDriver: true,
-        damping: 20,
-        stiffness: 300,
-      }).start();
-    } else {
-      Animated.spring(animation, {
-        toValue: 0,
-        useNativeDriver: true,
-        damping: 20,
-        stiffness: 300,
-      }).start();
-    }
-  }, [visible]);
+  const theme = colorScheme === 'dark' ? colors.dark : colors.light;
   
   return (
     <Modal
@@ -61,38 +43,35 @@ const AlertDialog = ({
       onRequestClose={onCancel}
     >
       <TouchableWithoutFeedback onPress={onCancel}>
-        <View style={[styles.overlay, { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.3)' }]}>
+        <View style={[styles.overlay, { backgroundColor: 'rgba(15, 23, 42, 0.4)' }]}>
           <TouchableWithoutFeedback>
-            <Animated.View 
+            <View 
               style={[
                 styles.dialog, 
                 { 
-                  backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
-                  transform: [
-                    {
-                      scale: animation.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0.9, 1],
-                      }),
-                    },
-                  ],
-                  opacity: animation,
+                  backgroundColor: theme.surface,
+                  borderColor: theme.border,
                 }
               ]}
             >
-              <Text style={[styles.title, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+              <Text style={[styles.title, { color: theme.text }]}>
                 {title}
               </Text>
-              <Text style={[styles.message, { color: isDark ? '#98989F' : '#8E8E93' }]}>
+              
+              <Text style={[styles.message, { color: theme.textSecondary }]}>
                 {message}
               </Text>
               
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
-                  style={[styles.button, styles.cancelButton]}
+                  style={[
+                    styles.button,
+                    styles.cancelButton,
+                    { borderColor: theme.border }
+                  ]}
                   onPress={onCancel}
                 >
-                  <Text style={[styles.buttonText, { color: isDark ? '#0A84FF' : '#007AFF' }]}>
+                  <Text style={[styles.buttonText, { color: theme.text }]}>
                     {cancelLabel}
                   </Text>
                 </TouchableOpacity>
@@ -100,7 +79,11 @@ const AlertDialog = ({
                 <TouchableOpacity
                   style={[
                     styles.button,
-                    { backgroundColor: danger ? (isDark ? '#FF453A' : '#FF3B30') : (isDark ? '#0A84FF' : '#007AFF') }
+                    styles.confirmButton,
+                    { 
+                      backgroundColor: danger ? theme.error : theme.primary,
+                      borderColor: danger ? theme.error : theme.primary,
+                    }
                   ]}
                   onPress={onConfirm}
                 >
@@ -109,7 +92,7 @@ const AlertDialog = ({
                   </Text>
                 </TouchableOpacity>
               </View>
-            </Animated.View>
+            </View>
           </TouchableWithoutFeedback>
         </View>
       </TouchableWithoutFeedback>
@@ -126,30 +109,43 @@ const styles = StyleSheet.create({
   },
   dialog: {
     width: '100%',
-    maxWidth: 270,
-    borderRadius: 14,
-    padding: 20,
-    alignItems: 'center',
+    maxWidth: 320,
+    borderRadius: 16,
+    padding: 24,
+    borderWidth: 1,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+      },
+    }),
   },
   title: {
-    fontSize: 17,
+    fontSize: 20,
     fontWeight: '600',
-    fontFamily: 'SF-Pro-Text-Semibold',
-    textAlign: 'center',
+    fontFamily: 'SF-Pro-Display-Semibold',
     marginBottom: 8,
   },
   message: {
-    fontSize: 13,
+    fontSize: 16,
     fontFamily: 'SF-Pro-Text-Regular',
-    textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 18,
+    marginBottom: 24,
+    lineHeight: 24,
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    width: '100%',
-    gap: 8,
+    gap: 12,
   },
   button: {
     flex: 1,
@@ -157,12 +153,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
   },
   cancelButton: {
     backgroundColor: 'transparent',
   },
+  confirmButton: {
+    backgroundColor: '#7C3AED',
+  },
   buttonText: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '600',
     fontFamily: 'SF-Pro-Text-Semibold',
   },
